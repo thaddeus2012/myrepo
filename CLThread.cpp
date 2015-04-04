@@ -1,18 +1,17 @@
 #include <iostream>
 #include "CLThread.h"
 #include "CLLogger.h"
+#include "CLCoordinator.h"
 
 using std::cout;
 using std::endl;
 
-CLThread::CLThread(CLExecutiveFunctionProvider* pExecutiveFunctionProvider):CLExecutive(pExecutiveFunctionProvider){
+CLThread::CLThread(CLCoordinator* pCoordinator):CLExecutive(pCoordinator){
 }
 
 CLThread::~CLThread(){}
 
-CLStatus CLThread::Run(void* pContext){
-    m_pContext = pContext;
-
+CLStatus CLThread::Run(){
     int r = pthread_create(&m_ThreadID,0,StartFunctionOfThread,this);
     if(r != 0){
 	CLLogger::WriteLogMsg("In CLThread::Run(),pthread_create error",r);
@@ -35,7 +34,7 @@ CLStatus CLThread::WaitForDeath(){
 void* CLThread::StartFunctionOfThread(void* pThis){
     CLThread* pThreadThis = (CLThread*)pThis;
 
-    CLStatus s = pThreadThis->m_pExecutiveFunctionProvider->RunExecutiveFunction(pThreadThis->m_pContext);
+    CLStatus s = pThreadThis->m_pCoordinator->ReturnControlRights();
 
     return (void*)s.m_clReturnCode;
 }

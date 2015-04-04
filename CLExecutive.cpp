@@ -1,10 +1,10 @@
 #include "CLExecutive.h"
 
-CLExecutive::CLExecutive(CLExecutiveFunctionProvider* pExecutiveFunctionProvider){
-    if(pExecutiveFunctionProvider == 0)
-	throw "In CLExecutive::CLExecutive(), pExecutiveFunctionProv id error";
+CLExecutive::CLExecutive(CLCoordinator* pCoordinator){
+    if(pCoordinator == 0)
+	throw "In CLExecutive::CLExecutive(), pCoordinator error";
 
-    m_pExecutiveFunctionProvider = pExecutiveFunctionProvider;
+    m_pCoordinator = pCoordinator;
 }
 
 CLExecutive::~CLExecutive(){}

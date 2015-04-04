@@ -3,14 +3,13 @@
 
 #include "CLStatus.h"
 #include "CLExecutive.h"
-#include "CLExecutiveFunctionProvider.h"
 
 class CLThread: public CLExecutive{
     public:
-	explicit CLThread(CLExecutiveFunctionProvider*);
+	explicit CLThread(CLCoordinator*);
 	virtual ~CLThread();
 
-	virtual CLStatus Run(void* pContext = 0);
+	virtual CLStatus Run();
 	virtual CLStatus WaitForDeath();
 
     private:
@@ -18,6 +17,5 @@ class CLThread: public CLExecutive{
 
     protected:
 	pthread_t m_ThreadID;
-	void* m_pContext;
 };
 #endif

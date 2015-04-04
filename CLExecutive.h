@@ -1,18 +1,21 @@
 #ifndef CLEXECUTIVE_H
 #define CLEXECUTIVE_H
 
-#include "CLExecutiveFunctionProvider.h"
+#include "CLStatus.h"
+//#include "CLCoordinator.h"
+
+class CLCoordinator;
 
 class CLExecutive{
     public:
-	explicit CLExecutive(CLExecutiveFunctionProvider*);
+	explicit CLExecutive(CLCoordinator* pCoordinator);
 	virtual ~CLExecutive();
 
-	virtual CLStatus Run(void* pContext) = 0;
+	virtual CLStatus Run() = 0;
 	virtual CLStatus WaitForDeath() = 0;
 
     protected:
-	CLExecutiveFunctionProvider* m_pExecutiveFunctionProvider;
+	CLCoordinator* m_pCoordinator;
 
     private:
 	CLExecutive(const CLExecutive&);
