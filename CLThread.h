@@ -2,12 +2,12 @@
 #define CLTHREAD_H
 
 #include "CLStatus.h"
-#include "CLExcutive.h"
-#include "CLExcutiveFunctionProvider.h"
+#include "CLExecutive.h"
+#include "CLExecutiveFunctionProvider.h"
 
-class CLThread: public CLExcutive{
+class CLThread: public CLExecutive{
     public:
-	explicit CLThread(CLExcutiveFunctionProvider*);
+	explicit CLThread(CLExecutiveFunctionProvider*);
 	virtual ~CLThread();
 
 	virtual CLStatus Run(void* pContext = 0);

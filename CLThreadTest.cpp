@@ -4,12 +4,12 @@
 using std::cout;
 using std::endl;
 
-class CLParaPrinter: public CLExcutiveFunctionProvider{
+class CLParaPrinter: public CLExecutiveFunctionProvider{
     public:
 	CLParaPrinter(){}
 	~CLParaPrinter(){}
 
-	virtual CLStatus RunExcutiveFunction(void* pContext){
+	virtual CLStatus RunExecutiveFunction(void* pContext){
 	    long i = (long)pContext;
 	    cout<<i<<endl;
 	    return CLStatus(0,0);
@@ -17,11 +17,11 @@ class CLParaPrinter: public CLExcutiveFunctionProvider{
 };
 
 int main(){
-    CLExcutiveFunctionProvider* printer = new CLParaPrinter();
-    CLExcutive* pExcutive = new CLThread(printer);
+    CLExecutiveFunctionProvider* printer = new CLParaPrinter();
+    CLExecutive* pExecutive = new CLThread(printer);
 
-    pExcutive->Run((void*)5);
-    pExcutive->WaitForDeath();
+    pExecutive->Run((void*)5);
+    pExecutive->WaitForDeath();
 
     return 0;
 }

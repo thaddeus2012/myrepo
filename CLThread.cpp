@@ -5,7 +5,7 @@
 using std::cout;
 using std::endl;
 
-CLThread::CLThread(CLExcutiveFunctionProvider* pExcutiveFunctionProvider):CLExcutive(pExcutiveFunctionProvider){
+CLThread::CLThread(CLExecutiveFunctionProvider* pExecutiveFunctionProvider):CLExecutive(pExecutiveFunctionProvider){
 }
 
 CLThread::~CLThread(){}
@@ -35,7 +35,7 @@ CLStatus CLThread::WaitForDeath(){
 void* CLThread::StartFunctionOfThread(void* pThis){
     CLThread* pThreadThis = (CLThread*)pThis;
 
-    CLStatus s = pThreadThis->m_pExcutiveFunctionProvider->RunExcutiveFunction(pThreadThis->m_pContext);
+    CLStatus s = pThreadThis->m_pExecutiveFunctionProvider->RunExecutiveFunction(pThreadThis->m_pContext);
 
     return (void*)s.m_clReturnCode;
 }
