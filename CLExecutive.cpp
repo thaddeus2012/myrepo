@@ -7,4 +7,6 @@ CLExecutive::CLExecutive(CLCoordinator* pCoordinator){
     m_pCoordinator = pCoordinator;
 }
 
-CLExecutive::~CLExecutive(){}
+CLExecutive::~CLExecutive(){
+    delete m_pCoordinator;
+}

@@ -7,6 +7,8 @@
 
 class CLMutex{
     public:
+	friend class CLConditionVariable;
+
 	CLMutex();
 	virtual ~CLMutex();
 
