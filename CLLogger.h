@@ -1,6 +1,7 @@
 #ifndef CLLOGGER_H
 #define CLLOGGER_H
 
+#include <pthread.h>
 #include "CLStatus.h"
 
 class CLLogger{
@@ -18,12 +19,17 @@ class CLLogger{
 	~CLLogger();
 
 	static void OnProcessExit();
+	
+	static pthread_mutex_t* InitializeMutex();
+	CLStatus WriteMsgAndErrcode(const char* pstrMsg,const char* pstrErrcode);
 
     private:
 	int m_fd;
-	static CLLogger* m_pLog;
 	char* m_pLogBuffer;
 	unsigned m_nUsedBytesForBuffer;
 	bool m_bFlagForProcessExit;
+	pthread_mutex_t* m_pMutexForWritingLog;
+	static pthread_mutex_t* m_pMutexForCreatingLogger;
+	static CLLogger* m_pLog;
 };
 #endif

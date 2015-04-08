@@ -2,18 +2,36 @@
 #include "CLThread.h"
 #include "CLExecutiveFunctionProvider.h"
 #include "CLRegularCoordinator.h"
+#include "CLCriticalSection.h"
 
 using std::cout;
 using std::endl;
 
-class CLMyPrinter: public CLExecutiveFunctionProvider{
+struct SPara{
+    int flag;
+    CLMutex mutex;
+};
+
+class CLMyFunction: public CLExecutiveFunctionProvider{
     public:
-	CLMyPrinter(){}
-	~CLMyPrinter(){}
+	CLMyFunction(){}
+	virtual ~CLMyFunction(){}
+
+	void test(){
+	    throw 32;
+	}
 
 	virtual CLStatus RunExecutiveFunction(void* pContext){
-	    long i = (long)pContext;
-	    cout<<"In thread("<<pthread_self()<<") "<<i<<endl;
+	    try{
+	        SPara* p = (SPara*)pContext;
+
+		CLCriticalSection(&(p->mutex));
+		p->flag++;
+	        cout<<"In thread("<<pthread_self()<<") "<<"flag="<<p->flag<<endl;
+		test();
+	    }catch(...){
+		cout<<"Exception"<<endl;
+	    }
 	    return CLStatus(0,0);
 	}
 };
@@ -21,13 +39,33 @@ class CLMyPrinter: public CLExecutiveFunctionProvider{
 int main(){
     CLCoordinator* pCoordinator = new CLRegularCoordinator();
     CLExecutive* pExecutive = new CLThread(pCoordinator);
-    CLExecutiveFunctionProvider* pProvider = new CLMyPrinter();
+    CLExecutiveFunctionProvider* pProvider = new CLMyFunction();
 
     pCoordinator->SetExecObjects(pExecutive,pProvider);
 
-    pCoordinator->Run((void*)5);
-    cout<<"In main thread("<<pthread_self()<<") "<<endl;
+    CLCoordinator* pCoordinator2 = new CLRegularCoordinator();
+    CLExecutive* pExecutive2 = new CLThread(pCoordinator2);
+    CLExecutiveFunctionProvider* pProvider2 = new CLMyFunction();
+
+    pCoordinator2->SetExecObjects(pExecutive2,pProvider2);
+
+    SPara *p = new SPara;
+    p->flag = 3;
+
+    pCoordinator->Run((void*)p);
+    pCoordinator2->Run((void*)p);
+
+    sleep(2);
+
+    p->mutex.Lock();
+
+    p->flag++;
+    cout<<"In main thread("<<pthread_self()<<") "<<"flag="<<p->flag<<endl;
+
+    p->mutex.UnLock();
+
     pCoordinator->WaitForDeath();
+    pCoordinator2->WaitForDeath();
 
     return 0;
 }
