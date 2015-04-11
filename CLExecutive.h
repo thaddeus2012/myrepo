@@ -2,7 +2,7 @@
 #define CLEXECUTIVE_H
 
 #include "CLStatus.h"
-//#include "CLCoordinator.h"
+#include "CLCoordinator.h"
 
 class CLCoordinator;
 

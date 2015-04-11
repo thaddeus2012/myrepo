@@ -1,8 +1,12 @@
 #include "CLCoordinator.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 CLCoordinator::CLCoordinator(){}
 
 CLCoordinator::~CLCoordinator(){
+    cout<<"CLCoordinator::~CLCoordinator()"<<endl;
     delete m_pFunctionProvider;
 }
 

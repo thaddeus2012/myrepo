@@ -12,7 +12,9 @@ CLThread::CLThread(CLCoordinator* pCoordinator):CLExecutive(pCoordinator),m_bThr
 CLThread::CLThread(CLCoordinator* pCoordinator,bool bWaitForDeath):CLExecutive(pCoordinator),m_bThreadCreated(false),m_bWaitForDeath(bWaitForDeath){
 }
 
-CLThread::~CLThread(){}
+CLThread::~CLThread(){
+    cout<<"CLThread::~CLThread()"<<endl;
+}
 
 CLStatus CLThread::Run(){
     if(m_bThreadCreated)
@@ -57,6 +59,7 @@ CLStatus CLThread::WaitForDeath(){
 	return CLStatus(-1,r);
     }
 
+    cout<<"In CLThread::WaitForDeath(), delete this"<<endl;
     delete this;
 
     return CLStatus(0,0);
@@ -75,10 +78,10 @@ void* CLThread::StartFunctionOfThread(void* pThis){
 
     CLStatus s2 = pThreadThis->m_pCoordinator->ReturnControlRights();
 
-    if(!pThreadThis->m_bWaitForDeath){
+    if(!(pThreadThis->m_bWaitForDeath)){
 	delete pThreadThis;
     }
 
-    return (void*)s.m_clReturnCode;
+    return (void*)s2.m_clReturnCode;
 }
 

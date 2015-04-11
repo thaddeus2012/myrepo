@@ -2,6 +2,8 @@
 #define CLCOORDINATOR_H
 
 #include "CLStatus.h"
+#include "CLExecutive.h"
+#include "CLExecutiveFunctionProvider.h"
 
 class CLExecutive;
 class CLExecutiveFunctionProvider;

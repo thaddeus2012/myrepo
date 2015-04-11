@@ -2,10 +2,15 @@
 #include "CLRegularCoordinator.h"
 #include "CLExecutive.h"
 #include "CLExecutiveFunctionProvider.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 CLRegularCoordinator::CLRegularCoordinator(){}
 
-CLRegularCoordinator::~CLRegularCoordinator(){}
+CLRegularCoordinator::~CLRegularCoordinator(){
+    cout<<"CLRegularCoordinator::ReturnControlRights()"<<endl;
+}
 
 CLStatus CLRegularCoordinator::Run(void* pContext){
     if(m_pExecutive == NULL || m_pFunctionProvider == NULL)

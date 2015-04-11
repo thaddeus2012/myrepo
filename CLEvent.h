@@ -8,12 +8,13 @@
 class CLEvent{
     public:
 	CLEvent();
+	explicit CLEvent(bool bSemaphore);
 	virtual ~CLEvent();
 
 	CLStatus Set();
 	CLStatus Wait();
 
-private:
+    private:
 	CLEvent(const CLEvent&);
 	CLEvent& operator=(const CLEvent&);
 
@@ -21,5 +22,6 @@ private:
 	CLMutex m_Mutex;
 	CLConditionVariable m_Cond;
 	int m_Flag;
+	bool m_bSemaphore;
 };
 #endif

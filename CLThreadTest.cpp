@@ -5,66 +5,115 @@
 #include "CLCriticalSection.h"
 #include "CLConditionVariable.h"
 #include "CLEvent.h"
+#include "CLMessageQueueBySTLQueue.h"
+#include "CLMsgLoopManagerForSTLQueue.h"
+
+#define ADD_MSG 0
+#define QUIT_MSG 1
 
 using std::cout;
 using std::endl;
 
-struct SPara{
-    int flag;
-    CLMutex mutex;
-    CLConditionVariable condition;
+class CLMyMsgProcessor;
+
+class CLAddMessage: public CLMessage{
+    public:
+	friend class CLMyMsgProcessor;
+
+	CLAddMessage(int op1,int op2):CLMessage(ADD_MSG){
+	    m_Op1 = op1;
+	    m_Op2 = op2;
+	}
+	virtual ~CLAddMessage(){
+	    cout<<"CLAddMessage::~CLAddMessage(),Message ID = "<<m_lMsgID<<", "<<m_Op1<<" "<<m_Op2<<endl;
+	}
+
+    private:
+	int m_Op1;
+	int m_Op2;
 };
 
-class CLMyFunction: public CLExecutiveFunctionProvider{
+class CLQuitMessage: public CLMessage{
     public:
-	CLMyFunction(){}
-	virtual ~CLMyFunction(){}
+	CLQuitMessage():CLMessage(QUIT_MSG){}
 
-	//void test(){
-	//    throw 32;
-	//}
+	virtual ~CLQuitMessage(){
+	    cout<<"CLQuitMessage::~CLQuitMessage(),Message ID = "<<m_lMsgID<<endl;
+	}
+};
 
-	virtual CLStatus RunExecutiveFunction(void* pContext){
-	    try{
-	        CLEvent* p = (CLEvent*)pContext;
+class CLMyMsgProcessor: public CLMsgLoopManagerForSTLQueue{
+    public:
+	CLMyMsgProcessor(CLMessageQueueBySTLQueue* pMsgQueue):CLMsgLoopManagerForSTLQueue(pMsgQueue){}
+	virtual ~CLMyMsgProcessor(){
+	    cout<<"CLMyMsgProcessor::~CLMyMsgProcessor()"<<endl;
+	}
 
-		sleep(2);
-		p->Set();
-		//CLCriticalSection(&(p->mutex));
-		//p->flag++;
-	        //cout<<"In thread("<<pthread_self()<<") "<<"flag="<<p->flag<<endl;
-		//test();
-
-		return CLStatus(0,0);
-	    }catch(...){
-		cout<<"Exception"<<endl;
+	virtual CLStatus DispatchMessage(CLMessage* pMsg){
+	    CLAddMessage* pAddMsg;
+	    switch(pMsg->m_clMsgID){
+		case ADD_MSG:
+		    pAddMsg = (CLAddMessage*)pMsg;
+		    cout<<pAddMsg->m_Op1 + pAddMsg->m_Op2<<endl;
+		    break;
+		case QUIT_MSG:
+		    cout<<"quit ..."<<endl;
+		    return CLStatus(QUIT_MSG_LOOP,0);
+		default:
+		    break;
 	    }
 	    return CLStatus(0,0);
 	}
 };
 
+class CLAdder: public CLExecutiveFunctionProvider{
+    public:
+	CLAdder(CLMessageLoopManager* pMsgLoopManager){
+	    if(pMsgLoopManager == NULL)
+		throw "In CLAdder::CLAdder(), pMsgLoopManager error";
+
+	    m_pMsgLoopManager = pMsgLoopManager;
+	}
+	virtual ~CLAdder(){
+	    cout<<"CLAdder::~CLAdder()"<<endl;
+	    if(m_pMsgLoopManager != NULL)
+		delete m_pMsgLoopManager;
+	}
+
+	virtual CLStatus RunExecutiveFunction(void* pContext){
+	    return m_pMsgLoopManager->EnterMessageLoop(pContext);
+	}
+
+    private:
+	CLMessageLoopManager* m_pMsgLoopManager;
+};
+
 int main(){
-    CLEvent* p = new CLEvent();
+    CLMessageQueueBySTLQueue* pQ = new CLMessageQueueBySTLQueue();
+    CLMessageLoopManager* pM = new CLMyMsgProcessor(pQ);
 
     CLCoordinator* pCoordinator = new CLRegularCoordinator();
-    CLExecutive* pExecutive = new CLThread(pCoordinator);
-    CLExecutiveFunctionProvider* pProvider = new CLMyFunction();
+    CLExecutive* pExecutive = new CLThread(pCoordinator,true);
+    //CLExecutive* pExecutive = new CLThread(pCoordinator);
+    CLExecutiveFunctionProvider* pProvider = new CLAdder(pM);
     pCoordinator->SetExecObjects(pExecutive,pProvider);
 
-    //CLCoordinator* pCoordinator2 = new CLRegularCoordinator();
-    //CLExecutive* pExecutive2 = new CLThread(pCoordinator2);
-    //CLExecutiveFunctionProvider* pProvider2 = new CLMyFunction();
-    //pCoordinator2->SetExecObjects(pExecutive2,pProvider2);
+    pCoordinator->Run(0);
 
-    pCoordinator->Run((void*)p);
-    //pCoordinator2->Run((void*)p);
+    CLAddMessage* paddmsg = new CLAddMessage(2,4);
+    pQ->PushMessage(paddmsg);
 
+    CLAddMessage* paddmsg1 = new CLAddMessage(3,6);
+    pQ->PushMessage(paddmsg1);
 
-    p->Wait();
+    CLAddMessage* paddmsg2 = new CLAddMessage(5,6);
+    pQ->PushMessage(paddmsg2);
 
+    CLQuitMessage* pquitmsg = new CLQuitMessage();
+    pQ->PushMessage(pquitmsg);
 
     pCoordinator->WaitForDeath();
-    //pCoordinator2->WaitForDeath();
+    //sleep(3);
 
     return 0;
 }

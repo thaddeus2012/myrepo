@@ -2,7 +2,8 @@
 #include "CLCriticalSection.h"
 #include "CLLogger.h"
 
-CLEvent::CLEvent():m_Flag(0){}
+CLEvent::CLEvent():m_Flag(0),m_bSemaphore(false){}
+CLEvent::CLEvent(bool bSemaphore):m_Flag(0),m_bSemaphore(bSemaphore){}
 
 CLEvent::~CLEvent(){}
 
@@ -12,7 +13,7 @@ CLStatus CLEvent::Set()
     {
 	CLCriticalSection cs(&m_Mutex);
     
-	m_Flag = 1;
+	m_Flag++;
     }
     catch(const char *str)
     {
@@ -43,7 +44,10 @@ CLStatus CLEvent::Wait()
 	    }
 	}
 
-	m_Flag = 0;
+	if(m_bSemaphore)
+	    m_Flag--;
+	else
+	    m_Flag = 0;
     }catch(const char* str){
 	CLLogger::WriteLogMsg("In CLEvent::Wait(), exception arise", 0);
 	return CLStatus(-1, 0);
