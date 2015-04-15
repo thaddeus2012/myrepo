@@ -9,7 +9,7 @@ using std::endl;
 CLRegularCoordinator::CLRegularCoordinator(){}
 
 CLRegularCoordinator::~CLRegularCoordinator(){
-    cout<<"CLRegularCoordinator::ReturnControlRights()"<<endl;
+    cout<<"CLRegularCoordinator::~CLRegularCoordinator()"<<endl;
 }
 
 CLStatus CLRegularCoordinator::Run(void* pContext){

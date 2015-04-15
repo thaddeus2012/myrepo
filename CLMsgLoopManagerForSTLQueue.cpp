@@ -3,7 +3,7 @@
 using std::cout;
 using std::endl;
 
-CLMsgLoopManagerForSTLQueue::CLMsgLoopManagerForSTLQueue(CLMessageQueueBySTLQueue* pMsgQueue){
+CLMsgLoopManagerForSTLQueue::CLMsgLoopManagerForSTLQueue(CLMessageObserver* pMessageObserver,CLMessageQueueBySTLQueue* pMsgQueue):CLMessageLoopManager(pMessageObserver){
     if(pMsgQueue == NULL)
 	throw "In CLMsgLoopManagerForSTLqueue::CLMsgLoopManagerForSTLqueue(), pMsgQueue error";
 
@@ -11,8 +11,8 @@ CLMsgLoopManagerForSTLQueue::CLMsgLoopManagerForSTLQueue(CLMessageQueueBySTLQueu
 }
 
 CLMsgLoopManagerForSTLQueue::~CLMsgLoopManagerForSTLQueue(){
-    cout<<"CLMsgLoopManagerForSTLQueue::~CLMsgLoopManagerForSTLQueue()"<<endl;
     delete m_pMsgQueue;
+    cout<<"CLMsgLoopManagerForSTLQueue::~CLMsgLoopManagerForSTLQueue()"<<endl;
 }
 
 CLStatus CLMsgLoopManagerForSTLQueue::Initialize(){

@@ -3,10 +3,11 @@
 
 #include "CLMessageLoopManager.h"
 #include "CLMessageQueueBySTLQueue.h"
+#include "CLMessageObserver.h"
 
 class CLMsgLoopManagerForSTLQueue: public CLMessageLoopManager{
     public:
-	CLMsgLoopManagerForSTLQueue(CLMessageQueueBySTLQueue*);
+	CLMsgLoopManagerForSTLQueue(CLMessageObserver*,CLMessageQueueBySTLQueue*);
 	virtual ~CLMsgLoopManagerForSTLQueue();
 
     protected:

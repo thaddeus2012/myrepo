@@ -7,6 +7,7 @@
 #include "CLEvent.h"
 #include "CLMessageQueueBySTLQueue.h"
 #include "CLMsgLoopManagerForSTLQueue.h"
+#include "CLMessageObserver.h"
 
 #define ADD_MSG 0
 #define QUIT_MSG 1
@@ -42,27 +43,32 @@ class CLQuitMessage: public CLMessage{
 	}
 };
 
-class CLMyMsgProcessor: public CLMsgLoopManagerForSTLQueue{
+class CLMyMsgProcessor: public CLMessageObserver{
     public:
-	CLMyMsgProcessor(CLMessageQueueBySTLQueue* pMsgQueue):CLMsgLoopManagerForSTLQueue(pMsgQueue){}
+	CLMyMsgProcessor(){}
 	virtual ~CLMyMsgProcessor(){
 	    cout<<"CLMyMsgProcessor::~CLMyMsgProcessor()"<<endl;
 	}
 
-	virtual CLStatus DispatchMessage(CLMessage* pMsg){
-	    CLAddMessage* pAddMsg;
-	    switch(pMsg->m_clMsgID){
-		case ADD_MSG:
-		    pAddMsg = (CLAddMessage*)pMsg;
-		    cout<<pAddMsg->m_Op1 + pAddMsg->m_Op2<<endl;
-		    break;
-		case QUIT_MSG:
-		    cout<<"quit ..."<<endl;
-		    return CLStatus(QUIT_MSG_LOOP,0);
-		default:
-		    break;
-	    }
+	virtual CLStatus Initialize(CLMessageLoopManager* pMessageLoop,void* pContext){
+	    CLStatus s = pMessageLoop->Register(ADD_MSG,(CallBackForMessageLoop)(&CLMyMsgProcessor::On_AddMsg));
+	    if(!s.IsSuccess())
+		return s;
+	    CLStatus s1 = pMessageLoop->Register(QUIT_MSG,(CallBackForMessageLoop)(&CLMyMsgProcessor::On_QuitMsg));
+	    return s1;
+	}
+
+	CLStatus On_AddMsg(CLMessage* pMsg){
+	    CLAddMessage* pAddMsg = (CLAddMessage*)pMsg;
+	    cout<<pAddMsg->m_Op1 + pAddMsg->m_Op2<<endl;
+
 	    return CLStatus(0,0);
+	}
+
+	CLStatus On_QuitMsg(CLMessage* pMsg){
+	    cout<<"quit ..."<<endl;
+
+	    return CLStatus(QUIT_MSG_LOOP,0);
 	}
 };
 
@@ -90,7 +96,8 @@ class CLAdder: public CLExecutiveFunctionProvider{
 
 int main(){
     CLMessageQueueBySTLQueue* pQ = new CLMessageQueueBySTLQueue();
-    CLMessageLoopManager* pM = new CLMyMsgProcessor(pQ);
+    CLMyMsgProcessor* pMsgProcessor = new CLMyMsgProcessor();
+    CLMessageLoopManager* pM = new CLMsgLoopManagerForSTLQueue(pMsgProcessor,pQ);
 
     CLCoordinator* pCoordinator = new CLRegularCoordinator();
     CLExecutive* pExecutive = new CLThread(pCoordinator,true);
