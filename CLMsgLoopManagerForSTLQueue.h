@@ -1,13 +1,16 @@
 #ifndef CLMSGLOOPMANAGERFORSTLQUEUE_H
 #define CLMSGLOOPMANAGERFORSTLQUEUE_H
 
+#include <string>
 #include "CLMessageLoopManager.h"
 #include "CLMessageQueueBySTLQueue.h"
 #include "CLMessageObserver.h"
 
+using std::string;
+
 class CLMsgLoopManagerForSTLQueue: public CLMessageLoopManager{
     public:
-	CLMsgLoopManagerForSTLQueue(CLMessageObserver*,CLMessageQueueBySTLQueue*);
+	CLMsgLoopManagerForSTLQueue(CLMessageObserver*,const char*);
 	virtual ~CLMsgLoopManagerForSTLQueue();
 
     protected:
@@ -18,5 +21,6 @@ class CLMsgLoopManagerForSTLQueue: public CLMessageLoopManager{
 
     private:
 	CLMessageQueueBySTLQueue* m_pMsgQueue;
+	string m_strThreadName;
 };
 #endif

@@ -6,6 +6,7 @@
 #include "CLLogger.h"
 #include "CLMessage.h"
 #include "CLMessageObserver.h"
+#include "CLExecutiveInitialFinishedNotifier.h"
 
 using std::map;
 
@@ -13,6 +14,11 @@ using std::map;
 
 //CLMessageObserver继承体系类中对消息处理的回调函数类型
 typedef CLStatus (CLMessageObserver::*CallBackForMessageLoop)(CLMessage*);
+
+struct SLExecutiveInitialParameter{
+    void* pContext;
+    CLExecutiveInitialFinishedNotifier* pNotifier;
+};
 
 class CLMessageLoopManager{
     public:

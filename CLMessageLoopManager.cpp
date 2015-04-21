@@ -26,20 +26,30 @@ CLStatus CLMessageLoopManager::Register(unsigned long lMsgID, CallBackForMessage
 
 CLStatus CLMessageLoopManager::EnterMessageLoop(void* pContext){
 
+    SLExecutiveInitialParameter* para = (SLExecutiveInitialParameter*)pContext;
+    if(para == NULL || para->pNotifier == NULL)
+	return CLStatus(-1,0);
+
     CLStatus s = Initialize();
     if(!s.IsSuccess()){
 	CLLogger::WriteLogMsg("In CLMessageLoopManager::EnterMessageLoop(), Initialize error", 0);
+	para->pNotifier->NotifyInitialFinished(false);
 	return CLStatus(-1, 0);
     }
 
-    CLStatus s1 = m_pMessageObserver->Initialize(this,pContext);
+    CLStatus s1 = m_pMessageObserver->Initialize(this,para->pContext);
     if(!s1.IsSuccess()){
 	CLLogger::WriteLogMsg("In CLMessageLoopManager::EnterMessageLoop(), m_pMessageObserver->Initialize error", 0);
 
 	CLStatus s2 = Uninitialize();
 	if(!s2.IsSuccess())
 	    CLLogger::WriteLogMsg("In CLMessageLoopManager::EnterMessageLoop(), Uninitialize() error", 0);
+
+	para->pNotifier->NotifyInitialFinished(false);
+	return CLStatus(-1,0);
     }
+
+    para->pNotifier->NotifyInitialFinished(true);
 
     while(true){
 	CLMessage* pMsg = WaitForMessage();

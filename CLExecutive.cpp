@@ -12,5 +12,5 @@ CLExecutive::CLExecutive(CLCoordinator* pCoordinator){
 
 CLExecutive::~CLExecutive(){
     cout<<"CLExecutive::~CLExecutive()"<<endl;
-    delete m_pCoordinator;
+    //delete m_pCoordinator; //Coordinator对象声明为栈上对象自动销毁
 }

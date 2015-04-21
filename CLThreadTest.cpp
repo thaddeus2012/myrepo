@@ -2,12 +2,17 @@
 #include "CLThread.h"
 #include "CLExecutiveFunctionProvider.h"
 #include "CLRegularCoordinator.h"
+#include "CLCoordinatorForMsgLoop.h"
 #include "CLCriticalSection.h"
 #include "CLConditionVariable.h"
 #include "CLEvent.h"
 #include "CLMessageQueueBySTLQueue.h"
 #include "CLMsgLoopManagerForSTLQueue.h"
 #include "CLMessageObserver.h"
+#include "CLExecutiveFunctionForMsgLoop.h"
+#include "CLMsgLoopManagerForSTLQueue.h"
+#include "CLExecutiveNameServer.h"
+#include "CLExecutiveCommunication.h"
 
 #define ADD_MSG 0
 #define QUIT_MSG 1
@@ -72,55 +77,14 @@ class CLMyMsgProcessor: public CLMessageObserver{
 	}
 };
 
-class CLAdder: public CLExecutiveFunctionProvider{
-    public:
-	CLAdder(CLMessageLoopManager* pMsgLoopManager){
-	    if(pMsgLoopManager == NULL)
-		throw "In CLAdder::CLAdder(), pMsgLoopManager error";
-
-	    m_pMsgLoopManager = pMsgLoopManager;
-	}
-	virtual ~CLAdder(){
-	    cout<<"CLAdder::~CLAdder()"<<endl;
-	    if(m_pMsgLoopManager != NULL)
-		delete m_pMsgLoopManager;
-	}
-
-	virtual CLStatus RunExecutiveFunction(void* pContext){
-	    return m_pMsgLoopManager->EnterMessageLoop(pContext);
-	}
-
-    private:
-	CLMessageLoopManager* m_pMsgLoopManager;
-};
-
 int main(){
-    CLMessageQueueBySTLQueue* pQ = new CLMessageQueueBySTLQueue();
-    CLMyMsgProcessor* pMsgProcessor = new CLMyMsgProcessor();
-    CLMessageLoopManager* pM = new CLMsgLoopManagerForSTLQueue(pMsgProcessor,pQ);
+    //只能在栈上分配CLCoordinatorForMsgLoop对象，堆上对象不能自行销毁，
+    //因为CLThread对象的析构函数不再调用CLCoordinatorForMsgLoop对象的析构函数
+    CLCoordinatorForMsgLoop threadForMsgLoop(new CLMyMsgProcessor(),"adder",true);
+    threadForMsgLoop.Run(0);
 
-    CLCoordinator* pCoordinator = new CLRegularCoordinator();
-    CLExecutive* pExecutive = new CLThread(pCoordinator,true);
-    //CLExecutive* pExecutive = new CLThread(pCoordinator);
-    CLExecutiveFunctionProvider* pProvider = new CLAdder(pM);
-    pCoordinator->SetExecObjects(pExecutive,pProvider);
-
-    pCoordinator->Run(0);
-
-    CLAddMessage* paddmsg = new CLAddMessage(2,4);
-    pQ->PushMessage(paddmsg);
-
-    CLAddMessage* paddmsg1 = new CLAddMessage(3,6);
-    pQ->PushMessage(paddmsg1);
-
-    CLAddMessage* paddmsg2 = new CLAddMessage(5,6);
-    pQ->PushMessage(paddmsg2);
-
-    CLQuitMessage* pquitmsg = new CLQuitMessage();
-    pQ->PushMessage(pquitmsg);
-
-    pCoordinator->WaitForDeath();
-    //sleep(3);
-
-    return 0;
+    CLExecutiveNameServer::PostExecutiveMessage("adder",new CLAddMessage(2,4));
+    CLExecutiveNameServer::PostExecutiveMessage("adder",new CLAddMessage(3,6));
+    CLExecutiveNameServer::PostExecutiveMessage("adder",new CLAddMessage(5,6));
+    CLExecutiveNameServer::PostExecutiveMessage("adder",new CLQuitMessage());
 }
